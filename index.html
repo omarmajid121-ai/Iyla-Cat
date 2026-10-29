@@ -72,7 +72,7 @@
         <filter id="soft" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="7"/></filter>
         <filter id="soft2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4"/></filter>
         <clipPath id="headClip"><path d="M200 92 C 290 92 340 140 338 210 C 344 236 334 262 318 280 C 290 312 250 322 200 322 C 150 322 110 312 82 280 C 66 262 56 236 62 210 C 60 140 110 92 200 92 Z"/></clipPath>
-        <clipPath id="bodyClip"><ellipse cx="200" cy="408" rx="114" ry="108"/></clipPath>
+        <clipPath id="bodyClip"><path d="M148 318 C 112 334 88 382 88 436 C 88 488 128 518 200 518 C 272 518 312 488 312 436 C 312 382 288 334 252 318 Z"/></clipPath>
         <clipPath id="clipL"><ellipse cx="148" cy="200" rx="34" ry="40"/></clipPath>
         <clipPath id="clipR"><ellipse cx="252" cy="200" rx="34" ry="40"/></clipPath>
         <clipPath id="mouthClip"><ellipse cx="0" cy="0" rx="22" ry="20"/></clipPath>
@@ -102,12 +102,12 @@
           <path d="M239 498 q 2 8 0 16 M254 496 q 2 9 0 18 M269 498 q 2 8 0 16" stroke="#D9A57A" stroke-width="3" fill="none" stroke-linecap="round"/>
         </g>
         <!-- body -->
-        <ellipse data-part="body" cx="200" cy="408" rx="114" ry="108" fill="url(#gFur)" stroke="#C4662A" stroke-width="3.5"/>
+        <path data-part="body" d="M148 318 C 112 334 88 382 88 436 C 88 488 128 518 200 518 C 272 518 312 488 312 436 C 312 382 288 334 252 318 Z" fill="url(#gFur)" stroke="#C4662A" stroke-width="3.5"/>
         <g clip-path="url(#bodyClip)" pointer-events="none">
-          <ellipse cx="200" cy="408" rx="114" ry="108" fill="url(#gShade)"/>
-          <path d="M88 372 q 18 2 34 -8 q -14 14 -34 18 Z M86 410 q 20 2 36 -8 q -14 16 -36 20 Z M312 372 q -18 2 -34 -8 q 14 14 34 18 Z M314 410 q -20 2 -36 -8 q 14 16 36 20 Z" fill="#C9682A"/>
+          <ellipse cx="200" cy="430" rx="120" ry="100" fill="url(#gShade)"/>
+          <path d="M92 400 q 18 2 32 -8 q -12 14 -32 18 Z M88 440 q 20 2 34 -8 q -12 16 -34 20 Z M308 400 q -18 2 -32 -8 q 12 14 32 18 Z M312 440 q -20 2 -34 -8 q 12 16 34 20 Z" fill="#C9682A"/>
         </g>
-        <ellipse data-part="belly" cx="200" cy="430" rx="72" ry="80" fill="url(#gCream)"/>
+        <path data-part="belly" d="M162 344 C 140 380 136 446 150 486 C 162 510 238 510 250 486 C 264 446 260 380 238 344 C 214 334 186 334 162 344 Z" fill="url(#gCream)"/>
         <!-- neck shadow + chest fluff -->
         <ellipse cx="200" cy="322" rx="96" ry="22" fill="#9C4A14" opacity=".35" filter="url(#soft2)" pointer-events="none"/>
         <path data-part="belly" d="M146 326 L156 352 L170 338 L182 362 L200 342 L218 362 L230 338 L244 352 L254 326 Q 200 312 146 326 Z" fill="url(#gCream)"/>
@@ -116,16 +116,16 @@
         <text id="neckSlot" x="200" y="330" font-size="56" text-anchor="middle" dominant-baseline="central" pointer-events="none"></text>
         <!-- arms -->
         <g id="armL" data-part="hand">
-          <path d="M130 336 C 98 360 90 420 102 452 C 110 472 142 470 146 450 C 152 420 152 378 152 350 Z" fill="url(#gFurDeep)" stroke="#C4662A" stroke-width="3.5" stroke-linejoin="round"/>
-          <path d="M112 380 q 10 4 20 0 M108 404 q 10 4 22 0" stroke="#C9682A" stroke-width="5" stroke-linecap="round" fill="none"/>
-          <ellipse cx="123" cy="454" rx="24" ry="18" fill="url(#gCream)" stroke="#E8C9A6" stroke-width="2"/>
-          <g fill="#FF9DB2"><ellipse cx="123" cy="460" rx="8" ry="6"/><circle cx="110" cy="449" r="3.6"/><circle cx="123" cy="445" r="3.6"/><circle cx="136" cy="449" r="3.6"/></g>
+          <path d="M152 338 C 126 356 118 410 130 452 C 138 476 172 474 176 452 C 180 420 178 380 174 350 Z" fill="url(#gFurDeep)" stroke="#C4662A" stroke-width="3.5" stroke-linejoin="round"/>
+          <path d="M134 392 q 10 4 22 0 M132 416 q 10 4 24 0" stroke="#C9682A" stroke-width="5" stroke-linecap="round" fill="none"/>
+          <ellipse cx="153" cy="456" rx="25" ry="18" fill="url(#gCream)" stroke="#E8C9A6" stroke-width="2"/>
+          <g fill="#FF9DB2"><ellipse cx="153" cy="462" rx="8" ry="6"/><circle cx="140" cy="451" r="3.6"/><circle cx="153" cy="447" r="3.6"/><circle cx="166" cy="451" r="3.6"/></g>
         </g>
         <g id="armR" data-part="hand">
-          <path d="M270 336 C 302 360 310 420 298 452 C 290 472 258 470 254 450 C 248 420 248 378 248 350 Z" fill="url(#gFurDeep)" stroke="#C4662A" stroke-width="3.5" stroke-linejoin="round"/>
-          <path d="M288 380 q -10 4 -20 0 M292 404 q -10 4 -22 0" stroke="#C9682A" stroke-width="5" stroke-linecap="round" fill="none"/>
-          <ellipse cx="277" cy="454" rx="24" ry="18" fill="url(#gCream)" stroke="#E8C9A6" stroke-width="2"/>
-          <g fill="#FF9DB2"><ellipse cx="277" cy="460" rx="8" ry="6"/><circle cx="264" cy="449" r="3.6"/><circle cx="277" cy="445" r="3.6"/><circle cx="290" cy="449" r="3.6"/></g>
+          <path d="M248 338 C 274 356 282 410 270 452 C 262 476 228 474 224 452 C 220 420 222 380 226 350 Z" fill="url(#gFurDeep)" stroke="#C4662A" stroke-width="3.5" stroke-linejoin="round"/>
+          <path d="M266 392 q -10 4 -22 0 M268 416 q -10 4 -24 0" stroke="#C9682A" stroke-width="5" stroke-linecap="round" fill="none"/>
+          <ellipse cx="247" cy="456" rx="25" ry="18" fill="url(#gCream)" stroke="#E8C9A6" stroke-width="2"/>
+          <g fill="#FF9DB2"><ellipse cx="247" cy="462" rx="8" ry="6"/><circle cx="234" cy="451" r="3.6"/><circle cx="247" cy="447" r="3.6"/><circle cx="260" cy="451" r="3.6"/></g>
         </g>
 
         <!-- head -->

@@ -90,6 +90,7 @@ function initAudio() {
   voiceIn.connect(pk); pk.connect(vc); vc.connect(vg); vg.connect(voiceAn); voiceAn.connect(master);
   const len = AC.sampleRate * 2; noiseBuf = AC.createBuffer(1, len, AC.sampleRate);
   const d = noiseBuf.getChannelData(0); for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  loadSounds();
   const b = AC.createBuffer(1, 1, 22050), s = AC.createBufferSource(); s.buffer = b; s.connect(AC.destination); s.start(0);
 }
 function envAt(g, t, a, p, h, r) {
@@ -113,109 +114,80 @@ function noise({ dur = .2, type = 'bandpass', f = 1000, f1 = 0, q = 1, peak = .3
   s.connect(fl); fl.connect(g); g.connect(sfx); s.start(st, Math.random()); s.stop(st + dur + .1);
 }
 
-/* --- Lili's cartoon voice: glottal source → moving formants, with breath, jitter and trill --- */
-let gWave = null;
-function getWave() {
-  if (gWave) return gWave;
-  const n = 48, re = new Float32Array(n), im = new Float32Array(n);
-  for (let k = 1; k < n; k++) im[k] = (k % 2 ? 1 : .8) / Math.pow(k, 1.1);
-  return gWave = AC.createPeriodicWave(re, im);
+/* --- Lili's voice: real recorded cat & giggle sounds, pitched up for a cartoon kitten --- */
+const SND = {};
+const SND_NAMES = ['meow_a','meow_b','mew','meow_c','meow_low','laugh_a','laugh_b','laugh_c','snore','sneeze_a','sneeze_b','cough','sip','pour','brush','breath'];
+function loadSounds() {
+  SND_NAMES.forEach(n => fetch('sounds/' + n + '.mp3').then(r => r.arrayBuffer()).then(ab => new Promise((res, rej) => AC.decodeAudioData(ab, res, rej))).then(buf => {
+    const d = buf.getChannelData(0), step = Math.floor(buf.sampleRate * .02), env = [];
+    let mx = 0;
+    for (let i = 0; i < d.length; i += step) { let q = 0; for (let j = i; j < Math.min(d.length, i + step); j++) q += d[j] * d[j]; const v = Math.sqrt(q / step); env.push(v); if (v > mx) mx = v; }
+    SND[n] = { buf, env:env.map(v => v / (mx || 1)) };
+  }).catch(() => {}));
 }
-const VOW = { i:[420,2900,3900], e:[620,2450,3500], a:[1000,1600,3300], o:[680,1150,3100], u:[460,1050,2900], m:[320,1350,2700] };
-const OPEN = { i:.45, e:.6, a:1, o:.75, u:.4, m:.05 };
-// segs: {d, v, f0, f1, g, br (0..1 breath, 1 = whisper), tr (trill Hz), gap}
-function voice(segs, o = {}) {
-  if (!AC) return 0;
-  const delay = o.t || 0, t0 = AC.currentTime + .01 + delay, base = (o.base || 540) * (o.p || 1), peak = o.gain || .34, sh = o.shift || 1.12;
-  const osc = AC.createOscillator(); osc.setPeriodicWave(getWave()); const F = osc.frequency;
-  const jit = AC.createBufferSource(); jit.buffer = noiseBuf; jit.loop = true;
-  const jl = AC.createBiquadFilter(); jl.type = 'lowpass'; jl.frequency.value = 14; const jg = AC.createGain(); jg.gain.value = base * .08;
-  jit.connect(jl); jl.connect(jg); jg.connect(F);
-  const vib = AC.createOscillator(); vib.frequency.value = o.vibF || 5.8; const vg = AC.createGain(); vg.gain.value = base * (o.vib ?? .018); vib.connect(vg); vg.connect(F);
-  const src = AC.createGain(), am = AC.createGain();
-  const trl = AC.createOscillator(); trl.frequency.value = 28; const trg = AC.createGain(); trg.gain.value = 0; trl.connect(trg); trg.connect(am.gain);
-  osc.connect(src); src.connect(am);
-  const br = AC.createBufferSource(); br.buffer = noiseBuf; br.loop = true; const bh = AC.createBiquadFilter(); bh.type = 'highpass'; bh.frequency.value = 600;
-  const bg = AC.createGain(); bg.gain.value = 0; br.connect(bh); bh.connect(bg);
-  const out = AC.createGain(); out.gain.value = .0001;
-  const fs = [[5, 2.6], [8, 1.7], [10, .7]].map(([q, g]) => { const f = AC.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = q; const fg = AC.createGain(); fg.gain.value = g; am.connect(f); bg.connect(f); f.connect(fg); fg.connect(out); return f; });
-  const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1100; const lg = AC.createGain(); lg.gain.value = .22; am.connect(lp); lp.connect(lg); lg.connect(out);
-  out.connect(sfx);
-  let t = t0, el = 0; const first = segs.find(x => !x.gap) || segs[0];
-  F.setValueAtTime(base * (first.f0 || 1), t0);
-  VOW[first.v || 'a'].forEach((v, i) => fs[i].frequency.setValueAtTime(v * sh, t0));
-  for (const x of segs) {
-    const d = x.d;
-    if (x.gap) { out.gain.setTargetAtTime(.0001, t, .012); t += d; el += d; continue; }
-    const v = VOW[x.v], g = (x.g ?? 1) * peak * (x.v === 'm' ? .6 : 1), f0 = x.f0 ?? 1;
-    F.setValueAtTime(base * f0, t); F.linearRampToValueAtTime(base * (x.f1 ?? f0), t + d);
-    v.forEach((fv, i) => fs[i].frequency.setTargetAtTime(fv * sh, t, .025));
-    out.gain.setTargetAtTime(g, t, .012);
-    const b = x.br || 0;
-    src.gain.setTargetAtTime(b >= 1 ? 0 : 1, t, .01); bg.gain.setTargetAtTime(b * .7, t, .015);
-    trg.gain.setTargetAtTime(x.tr ? .7 : 0, t, .01); if (x.tr) trl.frequency.setValueAtTime(x.tr, t);
-    mouthPulse(d, OPEN[x.v] * (b >= 1 ? .35 : 1) * (o.mouth ?? 1), delay + el);
-    t += d; el += d;
+const speaking = [];   // vocal clips currently playing → mouth sync
+function play(n, o = {}) {
+  if (!AC || !SND[n]) return 0;
+  const S_ = SND[n], rate = o.rate || 1, t0 = AC.currentTime + .005 + (o.t || 0);
+  const src = AC.createBufferSource(); src.buffer = S_.buf; src.playbackRate.value = rate;
+  const g = AC.createGain(); g.gain.value = o.gain ?? .9;
+  src.connect(g); g.connect(sfx);
+  const off = o.offset || 0, dur = o.dur ? Math.min(o.dur, S_.buf.duration - off) : S_.buf.duration - off;
+  if (o.dur) { g.gain.setValueAtTime(o.gain ?? .9, t0 + dur / rate - .04); g.gain.linearRampToValueAtTime(.0001, t0 + dur / rate); }
+  src.start(t0, off, dur);
+  const real = dur / rate;
+  if (o.mouth !== 0) speaking.push({ env:S_.env, s:now() + (o.t || 0) * 1000, off, rate, e:now() + ((o.t || 0) + real) * 1000, amp:o.mouth ?? 1 });
+  busy(real + (o.t || 0));
+  return real;
+}
+function speakMouth(t) {
+  let m = 0;
+  for (let i = speaking.length - 1; i >= 0; i--) {
+    const v = speaking[i];
+    if (t > v.e) { speaking.splice(i, 1); continue; }
+    if (t < v.s) continue;
+    const idx = Math.floor(((t - v.s) / 1000 * v.rate + v.off) / .02);
+    m = Math.max(m, clamp((v.env[idx] || 0) * 1.25, 0, 1) * v.amp);
   }
-  out.gain.setTargetAtTime(.0001, t, .035);
-  const stop = t + .35;
-  [osc, jit, vib, br, trl].forEach(n => { n.start(t0); n.stop(stop); });
-  busy(el + delay); return el;
+  return m;
 }
-// classic meow shapes (d = total length)
+const kitten = () => rnd(1.18, 1.32);
 function meow(p = 1, d = .6, o = {}) {
-  const sh = o.shape || 'meow', k = d;
-  const S_ = {
-    meow:[{v:'m',d:k*.12,f0:1,f1:1.1,g:.7},{v:'i',d:k*.2,f0:1.1,f1:1.32},{v:'a',d:k*.38,f0:1.32,f1:1.2},{v:'u',d:k*.3,f0:1.2,f1:.8,g:.7}],
-    mrrp:[{v:'m',d:k*.38,f0:.9,f1:1,tr:30,g:.8},{v:'u',d:k*.32,f0:1,f1:1.25,tr:30},{v:'a',d:k*.3,f0:1.25,f1:1.38,g:.8}],
-    sad: [{v:'m',d:k*.14,f0:1.15},{v:'e',d:k*.36,f0:1.15,f1:1.05},{v:'u',d:k*.5,f0:1,f1:.68,g:.6,br:.2}],
-    q:   [{v:'m',d:k*.14,f0:.9},{v:'e',d:k*.36,f0:.9,f1:.98},{v:'a',d:k*.5,f0:.98,f1:1.45}],
-    ahh: [{v:'a',d:k*.85,f0:1,f1:.85,br:.15},{v:'a',d:k*.15,f0:.85,f1:.8,br:1,g:.4}],
-    hee: [{v:'i',d:k,f0:1.5,f1:1.35}]
-  }[sh] || [];
-  return voice(S_, { p, gain:o.gain || .34, t:o.t, vib:o.vib ? .02 + o.vib : undefined, vibF:o.vibF, mouth:o.mouth });
+  const sh = o.shape || 'meow', r = kitten() * p;
+  const n = sh === 'sad' ? 'meow_low' : sh === 'q' || sh === 'hee' ? 'mew' : sh === 'mrrp' ? 'meow_c' : d < .45 ? pick(['mew','meow_c']) : pick(['meow_a','meow_b']);
+  return play(n, { rate:sh === 'sad' ? r * .95 : sh === 'q' ? r * 1.1 : r, t:o.t, gain:(o.gain ? Math.min(1, o.gain * 2.8) : .9), mouth:o.mouth });
 }
-// cartoon laugh: "hee-hee-hee-hee" with breaths in between
-function giggle(big) {
-  const n = big ? 7 : 5, L = [];
-  for (let i = 0; i < n; i++) {
-    const hi = (big ? 1.9 : 1.75) - i * .07;
-    L.push({ v:big ? 'a' : 'e', d:.085, f0:hi, f1:hi - .18 });
-    L.push({ v:'e', br:1, d:.05, g:.35 });
-  }
-  L.push({ v:'a', br:1, d:.18, g:.3 });
-  voice(L, { vib:.01, gain:.3 });
-}
-const laugh = () => giggle(true);
-const yawn = () => voice([{v:'a',d:.25,f0:.85,f1:1.25,br:.25,g:.7},{v:'a',d:.55,f0:1.25,f1:1.1,br:.3},{v:'o',d:.35,f0:1.1,f1:.75,br:.4,g:.7},{v:'m',d:.25,f0:.8,f1:.7,g:.5}], { vib:.03, gain:.3 });
-const sigh = () => voice([{v:'a',br:1,d:.15,g:.3},{v:'a',d:.35,f0:.8,f1:.62,br:.6,g:.45},{v:'m',d:.22,f0:.65,f1:.6,g:.35}], { gain:.28 });
-const mumble = () => voice([{v:'m',d:.2,f0:.8,f1:.9,g:.5},{v:'u',d:.15,f0:.9,f1:.75,g:.5},{v:'m',d:.18,f0:.75,g:.4}], { gain:.2, mouth:.4 });
-const chirp = (n = 2, p = 1.25) => { const L = []; for (let i = 0; i < n; i++) { L.push({v:'i',d:.09,f0:p,f1:p + .3}); L.push({v:'a',d:.07,f0:p + .3,f1:p + .2}); L.push({gap:1,d:.07}); } voice(L, { gain:.3 }); };
-const nomnom = () => voice([{v:'m',d:.16,f0:1,f1:1.25},{gap:1,d:.05},{v:'m',d:.16,f0:1.15,f1:1.35},{gap:1,d:.05},{v:'m',d:.26,f0:1.3,f1:1},{v:'a',d:.18,f0:1.1,f1:1.3,g:.7}], { gain:.32 });
-const nuhuh = () => voice([{v:'u',d:.16,f0:1.15},{gap:1,d:.08},{v:'m',d:.06,f0:1.05},{v:'u',d:.24,f0:1.05,f1:.82}], { gain:.3 });
-const bleh = () => voice([{v:'e',d:.35,f0:.9,f1:.72,tr:42,g:.9},{v:'e',br:1,d:.12,g:.3}], { gain:.32 });
-const ahah = () => voice([{v:'a',d:.1,f0:1.3},{gap:1,d:.04},{v:'a',d:.1,f0:1.5},{gap:1,d:.04},{v:'a',d:.32,f0:1.85,f1:1.6,br:.3}], { gain:.34 });
-const stretchWake = () => voice([{v:'m',d:.4,f0:.8,f1:1.2,g:.6},{v:'a',d:.45,f0:1.2,f1:1.5,br:.2},{v:'a',d:.3,f0:1.5,f1:1,br:.5,g:.6}], { gain:.3, vib:.03 });
-const hup = () => voice([{v:'u',d:.06,f0:1.1,br:.5},{v:'a',d:.14,f0:1.2,f1:1.6}], { gain:.3 });
+const giggle = () => play(pick(['laugh_b','laugh_c']), { rate:rnd(1.55, 1.7), gain:.85, mouth:.8 });
+const laugh = () => play('laugh_a', { rate:1.55, gain:.85, mouth:.9 });
+const yawn = () => play('meow_low', { rate:.98, gain:.8, mouth:1 });
+const sigh = () => play('breath', { rate:1.35, gain:.5, dur:1.1, mouth:.3 });
+const mumble = () => play('meow_c', { rate:.95, gain:.35, mouth:.3 });
+const chirp = (n = 2, p = 1.25) => { for (let i = 0; i < n; i++) play('mew', { rate:p + .1 + i * .08, t:i * .32, gain:.8, dur:.32 }); };
+const nomnom = () => { play('mew', { rate:1.45, gain:.75 }); };
+const nuhuh = () => { play('meow_c', { rate:1.05 }); };
+const bleh = () => play('cough', { rate:1.75, gain:.7, dur:.5, mouth:.8 });
+const ahah = () => { for (let i = 0; i < 3; i++) play('mew', { rate:1.55 + i * .12, t:i * .2, dur:.22 }); };
+const stretchWake = () => play('meow_b', { rate:1.08, gain:.85, mouth:1 });
+const hup = () => play('mew', { rate:1.6, dur:.3 });
 const chomp = () => { noise({ dur:.08, f:1700, q:.8, peak:.4 }); tone({ f0:190, f1:90, dur:.07, peak:.3 }); busy(.1); };
-const gulp = () => { tone({ f0:440, f1:130, dur:.14, peak:.45 }); busy(.15); };
-const slurp = () => { noise({ dur:.28, f:500, f1:2400, q:3, peak:.25 }); busy(.3); };
+const gulp = () => play('sip', { rate:1.1, offset:rnd(0, .5), dur:.3, gain:.9, mouth:0 });
+const slurp = () => play('sip', { rate:1.15, offset:0, dur:.45, gain:.9, mouth:0 });
 const boop = () => { tone({ f0:880, f1:1400, dur:.09, peak:.3 }); busy(.1); };
 const pop = () => { tone({ f0:300, f1:1600, dur:.06, peak:.35 }); noise({ dur:.03, type:'highpass', f:3000, peak:.12 }); busy(.08); };
 const boing = () => { tone({ f0:720, f1:170, dur:.45, peak:.32, vib:30, vibF:14 }); busy(.45); };
 const chime = () => { [1318.5, 1568, 2093, 2637].forEach((f, i) => { tone({ f0:f, dur:.7, type:'triangle', peak:.16, t:i * .08, a:.003 }); }); busy(.95); };
 const twinkle = () => { for (let i = 0; i < 6; i++) tone({ f0:rnd(1800, 3200), dur:.18, type:'sine', peak:.08, t:i * .05, a:.002 }); busy(.4); };
-const scrub = () => { noise({ dur:.09, f:3600, q:1.5, peak:.13 }); busy(.1); };
-const splash = () => { noise({ dur:.35, type:'highpass', f:1500, peak:.22, a:.02 }); busy(.35); };
+const scrub = () => play('brush', { rate:1.1, offset:rnd(0, 2), dur:.22, gain:.55, mouth:0 });
+const splash = () => play('pour', { rate:1, offset:rnd(0, 1.5), dur:.4, gain:.6, mouth:0 });
 const click = () => { tone({ f0:1900, dur:.025, type:'square', peak:.08 }); };
 const whoosh = () => { noise({ dur:.3, f:400, f1:1800, q:2, peak:.2, a:.03 }); busy(.3); };
 const squeak = () => { tone({ f0:1300, f1:950, dur:.22, type:'square', peak:.08, vib:60, vibF:28 }); busy(.25); };
 const heartbeat = () => { tone({ f0:75, f1:40, dur:.14, peak:.9 }); tone({ f0:70, f1:38, dur:.12, peak:.6, t:.22 }); busy(.4); };
-const cough = () => voice([{v:'a',br:.85,d:.11,f0:.8,g:.9},{gap:1,d:.09},{v:'a',br:.85,d:.11,f0:.75,g:.75}], { gain:.35 });
-const spicySfx = () => { noise({ dur:.6, type:'highpass', f:2500, peak:.2, a:.05 }); ahah(); };
+const cough = () => play('cough', { rate:1.5, gain:.65, mouth:.7 });
+const spicySfx = () => { noise({ dur:.6, type:'highpass', f:2500, peak:.15, a:.05 }); ahah(); };
 const yuckSfx = () => bleh();
-const sneeze = () => { voice([{v:'a',d:.18,f0:1,f1:1.2,br:.4},{gap:1,d:.08},{v:'a',d:.2,f0:1.15,f1:1.45,br:.4}], { gain:.3 }); noise({ dur:.25, type:'highpass', f:1400, peak:.55, a:.003, t:.56 }); voice([{v:'u',d:.18,f0:1.3,f1:.9,br:.5}], { t:.58, gain:.3 }); };
-const snore = () => { voice([{v:'o',d:1.1,f0:.15,f1:.17,br:.5,g:.6,tr:22}], { gain:.3, mouth:.2 }); voice([{v:'u',br:1,d:.7,g:.4}], { t:1.3, gain:.25, mouth:.3 }); tone({ f0:1000, f1:1500, dur:.6, peak:.04, t:1.35 }); };
+const sneeze = () => play(pick(['sneeze_a','sneeze_b']), { rate:1.45, gain:.75, mouth:.9 });
+const snore = () => { play('snore', { rate:1.25, gain:.6, mouth:.25 }); tone({ f0:1000, f1:1500, dur:.6, peak:.03, t:1.3 }); };
 const note = f => { tone({ f0:f, dur:1, peak:.32, a:.003 }); tone({ f0:f * 4, dur:.25, peak:.05, a:.002 }); tone({ f0:f * 2, dur:.5, type:'triangle', peak:.06, a:.002 }); busy(.5); };
 const musicBox = f => { tone({ f0:f, dur:1.4, peak:.1, a:.003 }); tone({ f0:f * 2, dur:.6, peak:.035, a:.002 }); };
 
@@ -363,8 +335,8 @@ function frame() {
   if (t < A.waveUntil) aR = -140 + Math.sin(t / 90) * 22;
   if (t < A.danceUntil) { aL = 70 + Math.sin(t / 180) * 50; aR = -70 + Math.sin(t / 180) * 50; }
   A.armL += (aL - A.armL) * Math.min(1, dt * 12); A.armR += (aR - A.armR) * Math.min(1, dt * 12);
-  R.armL.setAttribute('transform', `rotate(${A.armL} 132 350)`);
-  R.armR.setAttribute('transform', `rotate(${A.armR} 268 350)`);
+  R.armL.setAttribute('transform', `rotate(${A.armL} 162 350)`);
+  R.armR.setAttribute('transform', `rotate(${A.armR} 238 350)`);
 
   /* ears */
   A.earKick *= Math.pow(.02, dt);
@@ -400,7 +372,7 @@ function frame() {
   /* mouth */
   let mt = A.hold;
   if (A.voiceTalking) { voiceAn.getFloatTimeDomainData(vbuf); let s = 0; for (let i = 0; i < vbuf.length; i++) s += vbuf[i] * vbuf[i]; mt = Math.max(mt, clamp(Math.sqrt(s / vbuf.length) * 5, 0, 1)); }
-  if (A.tts) mt = Math.max(mt, .25 + .5 * Math.abs(Math.sin(t / 70)) * (.6 + .4 * Math.sin(t / 230)));
+  if (AC) mt = Math.max(mt, speakMouth(t));
   A.pulses = A.pulses.filter(p => t < p.e);
   for (const p of A.pulses) if (t >= p.s) mt = Math.max(mt, p.amp * Math.sin(Math.PI * (t - p.s) / (p.e - p.s)));
   if (A.wide) mt = 1;
