@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ar" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lili ليلي">
+<meta name="theme-color" content="#FFD7BF">
+<title>Lili ليلي</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ROOM -->
+  <div id="room">
+    <div id="window">
+      <div class="sky"><div class="sun"></div><div class="cloud"></div><div class="cloud c2"></div><div class="moon"></div><div class="stars"></div></div>
+      <div class="bars"></div>
+      <div class="curtain l"></div><div class="curtain r"></div>
+    </div>
+    <div id="frame"><span>🐠</span></div>
+    <div id="shelf"><div class="toys"><span>🧸</span><span>🪴</span><span>🧶</span></div><div class="board"></div></div>
+    <div id="lamp"><div class="cord"></div><div class="shade"></div><div class="bulb"></div></div>
+    <div id="glow"></div>
+    <div id="floor"></div>
+    <div id="bowl"><span>ليلي</span></div>
+  </div>
+
+  <!-- LILI -->
+  <div id="catWrap">
+    <div id="rug"></div>
+    <svg id="cat" viewBox="0 0 400 540" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="gFur" cx="45%" cy="32%" r="75%">
+          <stop offset="0" stop-color="#FFC786"/><stop offset=".65" stop-color="#F8A251"/><stop offset="1" stop-color="#E8863A"/>
+        </radialGradient>
+        <radialGradient id="gCream" cx="50%" cy="30%" r="75%">
+          <stop offset="0" stop-color="#FFFDF7"/><stop offset="1" stop-color="#FBE6CB"/>
+        </radialGradient>
+        <radialGradient id="gIris" cx="40%" cy="32%" r="72%">
+          <stop offset="0" stop-color="#8DF5DE"/><stop offset=".55" stop-color="#23B5A2"/><stop offset="1" stop-color="#0C6F64"/>
+        </radialGradient>
+        <linearGradient id="gEarIn" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#FF9DB4"/><stop offset="1" stop-color="#FFD3DD"/>
+        </linearGradient>
+        <clipPath id="clipL"><ellipse cx="148" cy="200" rx="34" ry="40"/></clipPath>
+        <clipPath id="clipR"><ellipse cx="252" cy="200" rx="34" ry="40"/></clipPath>
+        <clipPath id="mouthClip"><ellipse cx="0" cy="0" rx="22" ry="20"/></clipPath>
+      </defs>
+
+      <ellipse cx="200" cy="524" rx="140" ry="13" fill="rgba(90,40,10,.18)"/>
+
+      <g id="catBody">
+        <!-- tail -->
+        <g id="tail" data-part="tail">
+          <path d="M282 472 C 362 480 394 420 374 360 C 366 334 356 320 348 312" fill="none" stroke="#F29A48" stroke-width="32" stroke-linecap="round"/>
+          <path d="M368 346 C 362 330 355 320 348 312" fill="none" stroke="#FFF6E6" stroke-width="32" stroke-linecap="round"/>
+          <path d="M340 466 q 10 -8 8 -22 M372 420 q -14 -2 -24 -14 M380 388 q -14 2 -26 -6" fill="none" stroke="#DC7A2C" stroke-width="6" stroke-linecap="round"/>
+        </g>
+        <!-- feet -->
+        <g data-part="foot">
+          <ellipse cx="146" cy="502" rx="46" ry="26" fill="#F7A04F"/>
+          <ellipse cx="146" cy="508" rx="32" ry="15" fill="#FFF3E0"/>
+          <path d="M134 500 v10 M158 500 v10" stroke="#D9A57A" stroke-width="3" stroke-linecap="round"/>
+        </g>
+        <g data-part="foot">
+          <ellipse cx="254" cy="502" rx="46" ry="26" fill="#F7A04F"/>
+          <ellipse cx="254" cy="508" rx="32" ry="15" fill="#FFF3E0"/>
+          <path d="M242 500 v10 M266 500 v10" stroke="#D9A57A" stroke-width="3" stroke-linecap="round"/>
+        </g>
+        <!-- body -->
+        <ellipse data-part="body" cx="200" cy="408" rx="114" ry="108" fill="url(#gFur)"/>
+        <path d="M92 380 q 16 6 28 0 M90 412 q 16 6 28 0 M308 380 q -16 6 -28 0 M310 412 q -16 6 -28 0" fill="none" stroke="#DC7A2C" stroke-width="7" stroke-linecap="round" pointer-events="none"/>
+        <ellipse data-part="belly" cx="200" cy="428" rx="72" ry="80" fill="url(#gCream)"/>
+        <g id="dirtBody" pointer-events="none"></g>
+        <g id="bandBody" pointer-events="none"></g>
+        <text id="neckSlot" x="200" y="326" font-size="56" text-anchor="middle" dominant-baseline="central" pointer-events="none"></text>
+        <!-- arms -->
+        <g id="armL" data-part="hand">
+          <path d="M130 336 C 98 360 90 420 102 452 C 110 472 142 470 146 450 C 152 420 152 378 152 350 Z" fill="#F7A04F"/>
+          <ellipse cx="122" cy="454" rx="23" ry="17" fill="#FFF3E0"/>
+        </g>
+        <g id="armR" data-part="hand">
+          <path d="M270 336 C 302 360 310 420 298 452 C 290 472 258 470 254 450 C 248 420 248 378 248 350 Z" fill="#F7A04F"/>
+          <ellipse cx="278" cy="454" rx="23" ry="17" fill="#FFF3E0"/>
+        </g>
+
+        <!-- head -->
+        <g id="head">
+          <g id="earL" data-part="ear">
+            <path d="M82 170 Q 64 64 98 32 Q 148 56 178 104 Z" fill="#F7A04F" stroke="#E8863A" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M98 152 Q 90 84 106 58 Q 138 78 158 108 Z" fill="url(#gEarIn)"/>
+          </g>
+          <g id="earR" data-part="ear">
+            <path d="M318 170 Q 336 64 302 32 Q 252 56 222 104 Z" fill="#F7A04F" stroke="#E8863A" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M302 152 Q 310 84 294 58 Q 262 78 242 108 Z" fill="url(#gEarIn)"/>
+          </g>
+          <path d="M70 228 L44 240 L70 250 L50 268 L86 270 Z" fill="#F7A04F" data-part="head"/>
+          <path d="M330 228 L356 240 L330 250 L350 268 L314 270 Z" fill="#F7A04F" data-part="head"/>
+          <path data-part="head" d="M200 92 C 290 92 340 140 338 210 C 344 236 334 262 318 280 C 290 312 250 322 200 322 C 150 322 110 312 82 280 C 66 262 56 236 62 210 C 60 140 110 92 200 92 Z" fill="url(#gFur)"/>
+          <g stroke="#DC7A2C" stroke-width="7" stroke-linecap="round" fill="none" pointer-events="none">
+            <path d="M200 98 L200 128"/><path d="M178 102 Q181 114 184 124"/><path d="M222 102 Q219 114 216 124"/>
+          </g>
+          <!-- muzzle -->
+          <g data-part="head">
+            <ellipse cx="178" cy="266" rx="30" ry="23" fill="url(#gCream)"/>
+            <ellipse cx="222" cy="266" rx="30" ry="23" fill="url(#gCream)"/>
+            <ellipse cx="200" cy="290" rx="24" ry="15" fill="url(#gCream)"/>
+          </g>
+          <!-- sick brows -->
+          <g id="brows" opacity="0" stroke="#8A4A1A" stroke-width="5" stroke-linecap="round" pointer-events="none">
+            <path d="M120 150 L168 140"/><path d="M280 150 L232 140"/>
+          </g>
+          <!-- eyes -->
+          <g id="eyeL" data-part="head">
+            <g class="open">
+              <ellipse cx="148" cy="200" rx="34" ry="40" fill="#fff"/>
+              <g clip-path="url(#clipL)"><g class="pupil">
+                <circle cx="148" cy="203" r="27" fill="url(#gIris)"/>
+                <circle cx="148" cy="205" r="15" fill="#1D1A2B"/>
+                <circle cx="138" cy="191" r="8" fill="#fff"/>
+                <circle cx="158" cy="214" r="3.5" fill="#fff" opacity=".9"/>
+              </g></g>
+              <ellipse cx="148" cy="200" rx="34" ry="40" fill="none" stroke="#7A3D12" stroke-width="3"/>
+              <path d="M118 178 L104 168 M124 168 L114 156" stroke="#5A2A0C" stroke-width="4" stroke-linecap="round"/>
+            </g>
+            <path class="closed" d="M116 204 Q148 226 180 204 M120 210 L108 220" stroke="#5A2A0C" stroke-width="5" fill="none" stroke-linecap="round" display="none"/>
+            <path class="happy" d="M116 212 Q148 174 180 212" stroke="#5A2A0C" stroke-width="6" fill="none" stroke-linecap="round" display="none"/>
+          </g>
+          <g id="eyeR" data-part="head">
+            <g class="open">
+              <ellipse cx="252" cy="200" rx="34" ry="40" fill="#fff"/>
+              <g clip-path="url(#clipR)"><g class="pupil">
+                <circle cx="252" cy="203" r="27" fill="url(#gIris)"/>
+                <circle cx="252" cy="205" r="15" fill="#1D1A2B"/>
+                <circle cx="242" cy="191" r="8" fill="#fff"/>
+                <circle cx="262" cy="214" r="3.5" fill="#fff" opacity=".9"/>
+              </g></g>
+              <ellipse cx="252" cy="200" rx="34" ry="40" fill="none" stroke="#7A3D12" stroke-width="3"/>
+              <path d="M282 178 L296 168 M276 168 L286 156" stroke="#5A2A0C" stroke-width="4" stroke-linecap="round"/>
+            </g>
+            <path class="closed" d="M220 204 Q252 226 284 204 M280 210 L292 220" stroke="#5A2A0C" stroke-width="5" fill="none" stroke-linecap="round" display="none"/>
+            <path class="happy" d="M220 212 Q252 174 284 212" stroke="#5A2A0C" stroke-width="6" fill="none" stroke-linecap="round" display="none"/>
+          </g>
+          <ellipse cx="110" cy="252" rx="21" ry="11" fill="#FF8FA3" opacity=".5" pointer-events="none"/>
+          <ellipse cx="290" cy="252" rx="21" ry="11" fill="#FF8FA3" opacity=".5" pointer-events="none"/>
+          <ellipse id="redFace" cx="200" cy="215" rx="126" ry="102" fill="#FF2E2E" opacity="0" pointer-events="none"/>
+          <ellipse id="sickFace" cx="200" cy="230" rx="118" ry="84" fill="#8BE36A" opacity="0" pointer-events="none"/>
+          <!-- nose & mouth -->
+          <path data-part="nose" d="M184 243 Q200 236 216 243 Q209 258 200 261 Q191 258 184 243 Z" fill="#FF7F98"/>
+          <ellipse cx="195" cy="244" rx="5" ry="2.5" fill="#fff" opacity=".7" pointer-events="none"/>
+          <path id="mouthC" d="M200 261 L200 270 M200 270 Q189 282 177 272 M200 270 Q211 282 223 272" stroke="#6A2E14" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round" pointer-events="none"/>
+          <g id="mouthO" transform="translate(200 282)" display="none" pointer-events="none">
+            <ellipse rx="22" ry="20" fill="#6E1A2A"/>
+            <g clip-path="url(#mouthClip)">
+              <ellipse cx="0" cy="14" rx="15" ry="10" fill="#FF6F86"/>
+              <g id="teeth" display="none">
+                <rect x="-21" y="-21" width="42" height="12" rx="3" fill="#fff"/>
+                <path d="M-10.5 -21 V-9 M0 -21 V-9 M10.5 -21 V-9" stroke="#DDD" stroke-width="1.2"/>
+                <rect x="-16" y="6" width="32" height="9" rx="3" fill="#fff"/>
+                <g id="stains" fill="#C9A23A">
+                  <circle cx="-15" cy="-15" r="3.4"/><circle cx="-5" cy="-13" r="2.8"/><circle cx="5" cy="-16" r="3"/>
+                  <circle cx="15" cy="-13" r="3"/><circle cx="-8" cy="10" r="2.6"/><circle cx="8" cy="11" r="2.8"/>
+                </g>
+              </g>
+            </g>
+            <ellipse rx="22" ry="20" fill="none" stroke="#5A1D10" stroke-width="3"/>
+          </g>
+          <path id="stache" d="M172 272 Q186 292 200 279 Q214 292 228 272 Q214 265 200 272 Q186 265 172 272 Z" fill="#fff" opacity="0" pointer-events="none"/>
+          <g stroke="#8A5A3A" stroke-width="2.4" stroke-linecap="round" opacity=".7" pointer-events="none">
+            <path d="M150 264 L84 250"/><path d="M150 273 L82 278"/><path d="M250 264 L316 250"/><path d="M250 273 L318 278"/>
+          </g>
+          <g id="dirtHead" pointer-events="none"></g>
+          <text id="mouthItem" x="200" y="288" font-size="66" text-anchor="middle" dominant-baseline="central" pointer-events="none"></text>
+          <text id="glassesSlot" x="200" y="200" font-size="176" text-anchor="middle" dominant-baseline="central" pointer-events="none"></text>
+          <text id="hatSlot" x="200" y="58" font-size="104" text-anchor="middle" dominant-baseline="central" pointer-events="none"></text>
+          <text id="bowSlot" x="300" y="96" font-size="64" text-anchor="middle" dominant-baseline="central" pointer-events="none"></text>
+        </g>
+        <g id="foam" pointer-events="none"></g>
+        <g id="wet" pointer-events="none"></g>
+      </g>
+    </svg>
+  </div>
+
+  <div id="night"></div>
+  <div id="play"></div>
+  <div id="fx"></div>
+
+  <!-- NEEDS -->
+  <div id="needs">
+    <button class="need" data-need="food"><i class="ring"></i><b>🍗</b></button>
+    <button class="need" data-need="drink"><i class="ring"></i><b>🥛</b></button>
+    <button class="need" data-need="sleep"><i class="ring"></i><b>🌙</b></button>
+    <button class="need" data-need="clean"><i class="ring"></i><b>🛁</b></button>
+    <button class="need" data-need="fun"><i class="ring"></i><b>⚽</b></button>
+  </div>
+  <div id="thought"><span></span></div>
+  <div id="ear">👂</div>
+  <button id="parentBtn" aria-label="Parents"><span>⚙︎</span></button>
+
+  <!-- XYLOPHONE -->
+  <div id="xylo" class="hidden"></div>
+
+  <!-- DOCK -->
+  <div id="dock">
+    <button class="dbtn" data-mode="food" style="--c:#FF7A59">🍎</button>
+    <button class="dbtn" data-mode="drink" style="--c:#4FB3FF">🥛</button>
+    <button class="dbtn" data-mode="sleep" style="--c:#7C6CF2">🌙</button>
+    <button class="dbtn" data-mode="bath" style="--c:#38C6D9">🛁</button>
+    <button class="dbtn" data-mode="teeth" style="--c:#5BD17F">🪥</button>
+    <button class="dbtn" data-mode="play" style="--c:#FFB800">⚽</button>
+    <button class="dbtn" data-mode="dress" style="--c:#FF6FB5">🎀</button>
+    <button class="dbtn" data-mode="doctor" style="--c:#FF5A6E">🩺</button>
+  </div>
+  <div id="tray" class="hidden">
+    <button id="homeBtn">🏠</button>
+    <div id="trayItems"></div>
+  </div>
+
+  <!-- PARENTS -->
+  <div id="parent" class="hidden">
+    <div class="card">
+      <h2>Parents • للوالدين</h2>
+      <div class="row"><span>Language • اللغة</span>
+        <div class="seg"><button data-lang="ar">العربية</button><button data-lang="en">English</button></div></div>
+      <label class="row"><span>Repeat my voice • تكرار صوتي</span><input type="checkbox" id="optMic"></label>
+      <label class="row"><span>Lili talks • ليلي تتكلم</span><input type="checkbox" id="optTalk"></label>
+      <label class="row"><span>Voice pitch • حدة الصوت</span><input type="range" id="optPitch" min="1.2" max="2.2" step="0.05"></label>
+      <label class="row"><span>Volume • مستوى الصوت</span><input type="range" id="optVol" min="0" max="1" step="0.05"></label>
+      <div class="row col"><span>Install • التثبيت</span>
+        <small>Safari → Share ⬆︎ → Add to Home Screen<br>سفاري ← مشاركة ⬆︎ ← إضافة إلى الشاشة الرئيسية</small></div>
+      <div class="row btns"><button id="optReset" class="danger">Reset • إعادة ضبط</button><button id="optClose" class="primary">Done • تم</button></div>
+    </div>
+  </div>
+
+  <!-- START -->
+  <div id="start">
+    <div class="title">ليلي <span>Lili</span></div>
+    <button id="playBtn">🐾</button>
+    <div class="hint">اضغط للعب • Tap to play</div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
