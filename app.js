@@ -1,7 +1,7 @@
 'use strict';
 (() => {
 /* ============================================================
-   Lili ليلي — a virtual kitten for little ones (2–5 years)
+   Dede دي دي — a virtual kitten for little ones (2–5 years)
    ============================================================ */
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
