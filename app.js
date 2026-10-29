@@ -1068,5 +1068,9 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 function renderAll() { renderNeeds(); renderOutfit(); renderBandages(); }
 renderAll();
 requestAnimationFrame(frame);
-if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+if ('serviceWorker' in navigator) {
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloaded && !started) { reloaded = true; location.reload(); } });
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache:'none' }).then(r => r.update()).catch(() => {}));
+}
 })();
