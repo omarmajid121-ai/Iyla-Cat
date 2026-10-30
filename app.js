@@ -28,7 +28,7 @@ const T = {
 
 /* ---------------- saved state ---------------- */
 const KEY = 'lili-v1';
-const DEF = { needs:{food:85,drink:85,sleep:85,clean:85,fun:85}, outfit:{hat:null,glasses:null,bow:'🎀',neck:null},
+const DEF = { needs:{food:85,drink:85,sleep:85,clean:85,fun:85}, outfit:{hat:null,glasses:null,bow:'🎀',neck:null,cloth:null,shoes:null},
   settings:{lang:'ar',pitch:1.6,mic:true,talk:true,vol:.9}, bandages:[], t:Date.now() };
 const RATE = { food:3, drink:4, sleep:2, clean:2.5, fun:4 };   // points lost per minute
 const copy = o => JSON.parse(JSON.stringify(o));
@@ -48,7 +48,7 @@ const R = {
   mouthC: $('#mouthC'), mouthO: $('#mouthO'), teeth: $('#teeth'), stains: $$('#stains circle'), stache: $('#stache'),
   red: $('#redFace'), sick: $('#sickFace'), brows: $('#brows'), item: $('#mouthItem'),
   hat: $('#hatSlot'), bow: $('#bowSlot'), glasses: $('#glassesSlot'), neck: $('#neckSlot'),
-  foam: $('#foam'), wet: $('#wet'), dirtB: $('#dirtBody'), dirtH: $('#dirtHead'), band: $('#bandBody')
+  foam: $('#foam'), cloth: $('#cloth'), backCloth: $('#backCloth'), shoes: $('#shoes'), sleeveL: $('#sleeveL'), sleeveR: $('#sleeveR'), wet: $('#wet'), dirtB: $('#dirtBody'), dirtH: $('#dirtHead'), band: $('#bandBody')
 };
 const EYES = [['#eyeL',148],['#eyeR',252]].map(([s,cx]) => { const g = $(s); return { cx, open:$('.open',g), closed:$('.closed',g), happy:$('.happy',g), pupil:$('.pupil',g) }; });
 
@@ -476,12 +476,54 @@ function renderBandages() {
 function renderOutfit() {
   R.hat.textContent = S.outfit.hat || ''; R.bow.textContent = S.outfit.bow || '';
   R.glasses.textContent = S.outfit.glasses || ''; R.neck.textContent = S.outfit.neck || '';
+  const G = GARMENTS[S.outfit.cloth];
+  R.cloth.innerHTML = G ? G.front : ''; R.backCloth.innerHTML = G ? (G.back || '') : '';
+  R.sleeveL.innerHTML = G && G.sleeve ? sleeve('L', G.sleeve) : ''; R.sleeveR.innerHTML = G && G.sleeve ? sleeve('R', G.sleeve) : '';
+  R.shoes.innerHTML = SHOES[S.outfit.shoes] ? SHOES[S.outfit.shoes].svg : '';
 }
 function addSvgCircle(group, x, y, r, fill, stroke) {
   const c = document.createElementNS(SVGNS, 'circle'); c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', r); c.setAttribute('fill', fill);
   if (stroke) { c.setAttribute('stroke', stroke); c.setAttribute('stroke-width', 2); }
   group.appendChild(c); return c;
 }
+
+
+/* ---------------- clothes (drawn to fit Dede's body) ---------------- */
+const BODY_D = 'M148 318 C 112 334 88 382 88 436 C 88 488 128 518 200 518 C 272 518 312 488 312 436 C 312 382 288 334 252 318 Z';
+const torso = (fill, top, extra = '', trim = '#fff') => `<g clip-path="url(#bodyClip)"><path d="M70 ${top} Q 200 ${top + 34} 330 ${top} L330 545 L70 545 Z" fill="${fill}"/>${extra}<ellipse cx="200" cy="440" rx="125" ry="105" fill="url(#gShade)"/><path d="M70 ${top} Q 200 ${top + 34} 330 ${top}" fill="none" stroke="${trim}" stroke-width="6"/></g>`;
+const stripes = (a, b, top) => { let r = `<rect x="70" y="${top}" width="260" height="240" fill="${a}"/>`; for (let y = top; y < 545; y += 28) r += `<rect x="70" y="${y}" width="260" height="13" fill="${b}"/>`; return r; };
+function sleeve(side, [fill, len, cuff, pattern]) {
+  const x = side === 'L' ? 112 : 212, y2 = 332 + len;
+  const pat = pattern ? (() => { let r = ''; for (let y = 336; y < y2; y += 26) r += `<rect x="${x}" y="${y}" width="80" height="12" fill="${pattern}"/>`; return r; })() : '';
+  return `<g clip-path="url(#armClip${side})"><rect x="${x}" y="326" width="80" height="${len + 6}" fill="${fill}"/>${pat}<rect x="${x}" y="${y2 - 8}" width="80" height="9" fill="${cuff}"/></g>`;
+}
+const GARMENTS = {
+  tee:{ sleeve:['#4FA3FF',58,'#3B86DB'], front:torso('#4FA3FF',336,'<rect x="70" y="492" width="260" height="40" fill="#3B86DB"/><path d="M200 398 l7 15 17 2 -12 12 3 17 -15 -8 -15 8 3 -17 -12 -12 17 -2 Z" fill="#FFD84D" stroke="#E8B400" stroke-width="2" stroke-linejoin="round"/>') },
+  dress:{ sleeve:['#FFA6CF',46,'#fff'], front:torso('#FF7EB6',338,'')+
+    '<path d="M116 424 L284 424 Q 330 478 338 514 Q 200 542 62 514 Q 70 478 116 424 Z" fill="#FF7EB6" stroke="#E05A97" stroke-width="3"/>'+
+    '<g fill="#fff" opacity=".9"><circle cx="130" cy="480" r="6"/><circle cx="170" cy="455" r="6"/><circle cx="205" cy="495" r="6"/><circle cx="245" cy="458" r="6"/><circle cx="275" cy="490" r="6"/><circle cx="105" cy="508" r="5"/><circle cx="300" cy="508" r="5"/></g>'+
+    '<rect x="118" y="418" width="164" height="12" rx="6" fill="#fff"/><path d="M200 424 l-18 -10 v20 Z M200 424 l18 -10 v20 Z" fill="#E05A97"/><circle cx="200" cy="424" r="5" fill="#C93F7F"/>'+
+    '<ellipse cx="183" cy="347" rx="19" ry="10" fill="#fff"/><ellipse cx="217" cy="347" rx="19" ry="10" fill="#fff"/>' },
+  raincoat:{ sleeve:['#FFD23F',110,'#E0B020'], front:torso('#FFD23F',334,'<path d="M200 352 V545" stroke="#E0B020" stroke-width="4"/><g fill="#E0A000"><circle cx="214" cy="384" r="6"/><circle cx="214" cy="422" r="6"/><circle cx="214" cy="460" r="6"/></g><g fill="none" stroke="#E0B020" stroke-width="3"><rect x="112" y="446" width="36" height="28" rx="5"/><rect x="252" y="446" width="36" height="28" rx="5"/></g>','#E0B020') },
+  overalls:{ sleeve:['#FF6B6B',46,'#E04848'], front:torso('#FF6B6B',336,'<g clip-path="url(#bodyClip)"><path d="M150 388 L250 388 L250 414 L330 414 L330 545 L70 545 L70 414 L150 414 Z" fill="#4A72C9"/><rect x="178" y="398" width="44" height="26" rx="4" fill="none" stroke="#34569E" stroke-width="3"/><path d="M200 470 V545" stroke="#34569E" stroke-width="3"/></g><path d="M166 334 L158 392 M234 334 L242 392" stroke="#4A72C9" stroke-width="13" stroke-linecap="round"/><circle cx="158" cy="392" r="6" fill="#FFD24D"/><circle cx="242" cy="392" r="6" fill="#FFD24D"/>') },
+  hoodie:{ sleeve:['#4CC38A',110,'#33A06E'], front:'<ellipse cx="200" cy="334" rx="76" ry="18" fill="#33A06E"/>'+torso('#4CC38A',334,'<path d="M146 452 L254 452 L266 500 L134 500 Z" fill="#43B57E" stroke="#33A06E" stroke-width="3"/><g stroke="#fff" stroke-width="3.5" stroke-linecap="round"><path d="M186 350 L183 392"/><path d="M214 350 L217 392"/></g><circle cx="183" cy="394" r="4" fill="#fff"/><circle cx="217" cy="394" r="4" fill="#fff"/>','#33A06E') },
+  princess:{ sleeve:['#C9A2FF',44,'#FFD24D'], front:torso('#A066F0',340,'','#FFD24D')+
+    '<path d="M112 426 L288 426 Q 346 486 352 520 Q 200 550 48 520 Q 54 486 112 426 Z" fill="#A066F0" stroke="#7E46D0" stroke-width="3"/>'+
+    '<path d="M70 512 Q 110 494 150 514 Q 200 494 250 514 Q 290 494 330 512" fill="none" stroke="#C9A2FF" stroke-width="6" stroke-linecap="round"/>'+
+    '<g fill="#FFE27A"><circle cx="128" cy="470" r="4"/><circle cx="168" cy="448" r="3"/><circle cx="214" cy="478" r="4"/><circle cx="254" cy="452" r="3"/><circle cx="282" cy="486" r="4"/><circle cx="96" cy="500" r="3"/></g>'+
+    '<rect x="114" y="420" width="172" height="12" rx="6" fill="#FFD24D"/><circle cx="200" cy="426" r="8" fill="#FF7EB6" stroke="#FFD24D" stroke-width="3"/>' },
+  pajama:{ sleeve:['#BFE3FF',110,'#8CC8F5','#fff'], front:`<g clip-path="url(#bodyClip)"><path d="M70 334 Q 200 368 330 334 L330 545 L70 545 Z" fill="#BFE3FF"/></g>`+
+    `<g clip-path="url(#bodyClip)"><path d="M70 334 Q 200 368 330 334 L330 545 L70 545 Z" fill="url(#pjStripes)"/><ellipse cx="200" cy="440" rx="125" ry="105" fill="url(#gShade)"/></g>`+
+    '<g fill="#fff" stroke="#8CC8F5" stroke-width="2"><circle cx="200" cy="384" r="6"/><circle cx="200" cy="420" r="6"/><circle cx="200" cy="456" r="6"/><circle cx="200" cy="492" r="6"/></g><text x="250" y="470" font-size="26" text-anchor="middle" dominant-baseline="central">🌙</text>' },
+  cape:{ back:'<path d="M150 330 C 100 400 64 470 58 528 Q 200 552 342 528 C 336 470 300 400 250 330 Z" fill="#E8344E" stroke="#B81F37" stroke-width="3.5"/><path d="M90 512 Q 200 532 310 512" fill="none" stroke="#FF6B7E" stroke-width="5" stroke-linecap="round"/>',
+    front:'<path d="M160 336 Q 200 352 240 336" fill="none" stroke="#FFD24D" stroke-width="5"/><circle cx="160" cy="338" r="8" fill="#FFD24D" stroke="#E0A800" stroke-width="2"/><circle cx="240" cy="338" r="8" fill="#FFD24D" stroke="#E0A800" stroke-width="2"/><circle cx="200" cy="415" r="30" fill="#FFD24D" stroke="#E0A800" stroke-width="3"/><text x="200" y="417" font-size="36" font-weight="900" fill="#E8344E" text-anchor="middle" dominant-baseline="central" font-family="Arial Rounded MT Bold,Arial,sans-serif">D</text>' }
+};
+const shoePair = (fill, dark, extra) => [146, 254].map(x => `<ellipse cx="${x}" cy="503" rx="49" ry="28" fill="${fill}" stroke="${dark}" stroke-width="3.5"/>${extra(x)}`).join('');
+const SHOES = {
+  sneakers:{ e:'👟', svg:shoePair('#FF4D5E', '#C9283A', x => `<ellipse cx="${x}" cy="511" rx="34" ry="14" fill="#fff"/><path d="M${x - 44} 514 Q ${x} 536 ${x + 44} 514" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/><path d="M${x - 14} 486 h28 M${x - 14} 494 h28" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>`) },
+  boots:{ e:'👢', svg:shoePair('#FF7EB6', '#D9558F', x => `<ellipse cx="${x}" cy="480" rx="40" ry="10" fill="#fff"/><circle cx="${x}" cy="503" r="7" fill="#fff"/>`) },
+  wellies:{ e:'🥾', svg:shoePair('#FFD23F', '#D9A800', x => `<path d="M${x - 46} 512 Q ${x} 534 ${x + 46} 512" fill="none" stroke="#3A86FF" stroke-width="7" stroke-linecap="round"/><circle cx="${x + 18}" cy="492" r="6" fill="#3A86FF"/>`) }
+};
 
 /* ============================================================
    TOUCHING LILI
@@ -951,18 +993,28 @@ const XY = [[523.25,'#FF5A5F'],[587.33,'#FF9F1C'],[659.25,'#FFD23F'],[698.46,'#3
 }
 
 /* ---------- DRESS UP ---------- */
-const WARDROBE = [['hat','👑'],['hat','🎩'],['hat','🧢'],['hat','👒'],['bow','🎀'],['bow','🌸'],['bow','🦋'],['glasses','🕶️'],['glasses','👓'],['neck','🔔'],['neck','🧣'],['neck','🏅']];
-function modeDress() {
-  setTray([...WARDROBE.map(([slot, e]) => ({ e, id:slot + e, cls:S.outfit[slot] === e ? 'on' : '', down:ev => { ev.preventDefault(); wear(slot, e); } })),
-    { e:'🔄', id:'clear', down:ev => { ev.preventDefault(); S.outfit = { hat:null, glasses:null, bow:null, neck:null }; renderOutfit(); markOutfit(); whoosh(); A.wobUntil = now() + 500; save(); } }]);
+const WARDROBE = {
+  cloth: Object.keys(GARMENTS), hat:['👑','🎩','🧢','👒','🎓'], bow:['🎀','🌸','🦋','🌻'],
+  glasses:['🕶️','👓','🥽'], shoes: Object.keys(SHOES), neck:['🔔','🧣','🏅','📿']
+};
+const CAT_ICON = { cloth:'👗', hat:'👑', bow:'🎀', glasses:'🕶️', shoes:'👟', neck:'🔔' };
+const thumb = k => `<svg viewBox="58 300 284 250" width="82%" height="82%"><path d="${BODY_D}" fill="#F9A455"/>${GARMENTS[k].back || ''}${GARMENTS[k].front}</svg>`;
+function modeDress() { dressCats(); }
+function dressCats() {
+  setTray([...Object.keys(WARDROBE).map(slot => ({ e:CAT_ICON[slot], id:'cat:' + slot, cls:S.outfit[slot] ? 'on' : '', down:ev => { ev.preventDefault(); click(); dressSlot(slot); } })),
+    { e:'🔄', id:'clear', down:ev => { ev.preventDefault(); S.outfit = { hat:null, glasses:null, bow:null, neck:null, cloth:null, shoes:null }; renderOutfit(); dressCats(); whoosh(); A.wobUntil = now() + 500; save(); } }]);
 }
-function markOutfit() { $$('.item', items).forEach(b => { const id = b.dataset.id; if (!id || id === 'clear') return; const slot = id.match(/^[a-z]+/)[0]; b.classList.toggle('on', S.outfit[slot] === id.slice(slot.length)); }); }
+function dressSlot(slot) {
+  setTray([{ e:'⬅️', id:'back', down:ev => { ev.preventDefault(); click(); dressCats(); } },
+    ...WARDROBE[slot].map(k => ({ html:slot === 'cloth' ? thumb(k) : slot === 'shoes' ? SHOES[k].e : k, id:slot + ':' + k, cls:S.outfit[slot] === k ? 'on' : '', down:ev => { ev.preventDefault(); wear(slot, k); } }))]);
+}
+function markOutfit() { $$('.item', items).forEach(b => { const id = b.dataset.id || ''; const [slot, k] = id.split(':'); if (k && slot !== 'cat' && slot in S.outfit) b.classList.toggle('on', S.outfit[slot] === k); }); }
 function wear(slot, e) {
   if (A.lock) return;
   S.outfit[slot] = S.outfit[slot] === e ? null : e; renderOutfit(); markOutfit(); save();
-  const pos = { hat:[200,58], bow:[300,96], glasses:[200,200], neck:[200,326] }[slot], c = toC(...pos);
-  if (S.outfit[slot]) { pop(); twinkle(); sparkles(c.x, c.y, 5, 50); eyes('happy', 900); hop(14); addNeed('fun', 2); if (Math.random() < .35) setTimeout(() => say('pretty'), 350); else setTimeout(() => meow(1.2, .35, { shape:'mrrp' }), 200); }
-  else { whoosh(); }
+  const pos = { hat:[200,58], bow:[300,96], glasses:[200,200], neck:[200,326], cloth:[200,420], shoes:[200,505] }[slot], c = toC(...pos);
+  if (S.outfit[slot]) { pop(); twinkle(); sparkles(c.x, c.y, 6, 60 * sc()); eyes('happy', 900); hop(14); addNeed('fun', 2); if (Math.random() < .4) setTimeout(() => say('pretty'), 350); else setTimeout(() => meow(1.2, .35, { shape:'mrrp' }), 200); }
+  else whoosh();
 }
 
 /* ---------- DOCTOR ---------- */
