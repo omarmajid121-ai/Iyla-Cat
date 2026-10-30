@@ -121,9 +121,9 @@ body.night #night{opacity:1}
 #dock,#tray{position:absolute;z-index:7;left:0;right:0;bottom:0;height:calc(var(--dock) + var(--safeB));padding:0 12px var(--safeB);
   display:flex;align-items:center;justify-content:center;gap:1.1vw;
   background:linear-gradient(rgba(255,255,255,0),rgba(255,255,255,.55) 35%);}
-.dbtn{width:min(var(--btn),calc((100vw - 40px)/8 - 1.1vw));border-width:5px;aspect-ratio:1;border-radius:50%;background:#fff;
+.dbtn{width:min(var(--btn),calc((100vw - 40px)/9 - 1.1vw));border-width:5px;aspect-ratio:1;border-radius:50%;background:#fff;
   border:4px solid var(--c);box-shadow:0 6px 0 rgba(0,0,0,.08),0 8px 18px rgba(120,60,20,.16);
-  font-size:calc(min(var(--btn),(100vw - 40px)/8) * .48);display:grid;place-items:center;line-height:1;transition:transform .12s}
+  font-size:calc(min(var(--btn),(100vw - 40px)/9) * .48);display:grid;place-items:center;line-height:1;transition:transform .12s}
 .dbtn:active,.item:active,#homeBtn:active{transform:scale(.88)}
 .dbtn.hint,.item.hint{animation:hint 1s ease-in-out infinite}
 @keyframes hint{50%{transform:scale(1.14);box-shadow:0 0 0 8px rgba(255,200,0,.45),0 8px 18px rgba(120,60,20,.16)}}
@@ -192,3 +192,17 @@ body.night #night{opacity:1}
   background:linear-gradient(170deg,rgba(255,250,215,.42),rgba(255,250,215,0) 75%);clip-path:polygon(4% 0,62% 0,100% 100%,30% 100%);transition:opacity 1s}
 body.night #beam{opacity:0}
 #plant{position:absolute;right:3vw;bottom:calc(var(--dock) + var(--safeB) + 2vh);font-size:16vmin;line-height:1;filter:drop-shadow(0 10px 6px rgba(90,40,10,.25))}
+
+/* potty */
+#toilet{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;opacity:0;transform:translateX(70%) scale(.85);
+  transition:opacity .35s,transform .5s cubic-bezier(.3,1.4,.5,1)}
+#toilet.on{opacity:1;transform:none}
+#flushH{transform-origin:68px 324px;transition:transform .2s}
+#toilet.flush #flushH{transform:rotate(-28deg)}
+.item .num{position:absolute;left:-7px;top:-7px;width:28px;height:28px;border-radius:50%;background:#8E5CF7;color:#fff;font-size:16px;font-weight:900;font-style:normal;
+  display:grid;place-items:center;box-shadow:0 2px 4px rgba(0,0,0,.2);font-family:ui-rounded,-apple-system,sans-serif}
+.item.later{opacity:.42}
+.dbtn{position:relative}
+.badge{position:absolute;right:-6px;top:-6px;min-width:30px;height:30px;padding:0 7px;border-radius:15px;background:#FFC233;color:#6A4000;
+  font-size:16px;font-weight:900;font-style:normal;display:grid;place-items:center;box-shadow:0 2px 4px rgba(0,0,0,.2);font-family:ui-rounded,-apple-system,sans-serif}
+.badge:empty{display:none}

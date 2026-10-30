@@ -1,4 +1,4 @@
-const CACHE = 'dede-v6';
+const CACHE = 'dede-v7';
 const FILES = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
   ...['meow_a','meow_b','mew','meow_c','meow_low','laugh_a','laugh_b','laugh_c','snore','sneeze_a','sneeze_b','cough','sip','pour','brush','breath'].map(n => `sounds/${n}.mp3`)];
 self.addEventListener('install', e => {

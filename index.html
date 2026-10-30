@@ -12,7 +12,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="style.css?v=6">
+<link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
 <div id="app">
@@ -37,6 +37,16 @@
   <!-- LILI -->
   <div id="catWrap">
     <div id="rug"></div>
+    <svg id="toilet" viewBox="0 0 400 540" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="gPor" x1="0" x2="1"><stop offset="0" stop-color="#E3EDF5"/><stop offset=".45" stop-color="#fff"/><stop offset="1" stop-color="#D3E1EC"/></linearGradient></defs>
+      <rect x="52" y="292" width="296" height="160" rx="24" fill="url(#gPor)" stroke="#A9BFCF" stroke-width="4"/>
+      <rect x="40" y="278" width="320" height="28" rx="13" fill="#fff" stroke="#A9BFCF" stroke-width="4"/>
+      <g id="flushH"><rect x="60" y="318" width="40" height="13" rx="6.5" fill="#B8C9D6" stroke="#93AABB" stroke-width="2"/><circle cx="68" cy="324.5" r="10" fill="#C9D7E2" stroke="#93AABB" stroke-width="2"/></g>
+      <path d="M124 520 Q 116 560 104 584 L 296 584 Q 284 560 276 520 Z" fill="url(#gPor)" stroke="#A9BFCF" stroke-width="4"/>
+      <path d="M58 472 Q 60 546 200 552 Q 340 546 342 472 Z" fill="url(#gPor)" stroke="#A9BFCF" stroke-width="4"/>
+      <ellipse cx="200" cy="472" rx="150" ry="31" fill="#86CFF3" stroke="#4FA8D8" stroke-width="4"/>
+      <ellipse cx="200" cy="470" rx="106" ry="17" fill="#2E5068" opacity=".35"/>
+    </svg>
     <svg id="cat" viewBox="0 0 400 540" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <radialGradient id="gFur" cx="42%" cy="28%" r="80%">
@@ -265,6 +275,7 @@
     <button class="need" data-need="sleep"><i class="ring"></i><b>🌙</b></button>
     <button class="need" data-need="clean"><i class="ring"></i><b>🛁</b></button>
     <button class="need" data-need="fun"><i class="ring"></i><b>⚽</b></button>
+    <button class="need" data-need="potty"><i class="ring"></i><b>🚽</b></button>
   </div>
   <div id="thought"><span></span></div>
   <div id="ear">👂</div>
@@ -280,6 +291,7 @@
     <button class="dbtn" data-mode="sleep" style="--c:#7C6CF2">🌙</button>
     <button class="dbtn" data-mode="bath" style="--c:#38C6D9">🛁</button>
     <button class="dbtn" data-mode="teeth" style="--c:#5BD17F">🪥</button>
+    <button class="dbtn" data-mode="potty" style="--c:#8E5CF7">🚽<i class="badge" id="potBadge"></i></button>
     <button class="dbtn" data-mode="play" style="--c:#FFB800">⚽</button>
     <button class="dbtn" data-mode="dress" style="--c:#FF6FB5">🎀</button>
     <button class="dbtn" data-mode="doctor" style="--c:#FF5A6E">🩺</button>
@@ -292,7 +304,7 @@
   <!-- PARENTS -->
   <div id="parent" class="hidden">
     <div class="card">
-      <h2>Parents • للوالدين <small>v6</small></h2>
+      <h2>Parents • للوالدين <small>v7</small></h2>
       <label class="row"><span>Repeat my voice • تكرار صوتي</span><input type="checkbox" id="optMic"></label>
       <label class="row"><span>Voice pitch • حدة الصوت</span><input type="range" id="optPitch" min="1.2" max="2.2" step="0.05"></label>
       <label class="row"><span>Volume • مستوى الصوت</span><input type="range" id="optVol" min="0" max="1" step="0.05"></label>
@@ -309,6 +321,6 @@
     <div class="hint">اضغط للعب • Tap to play</div>
   </div>
 </div>
-<script src="app.js?v=6"></script>
+<script src="app.js?v=7"></script>
 </body>
 </html>

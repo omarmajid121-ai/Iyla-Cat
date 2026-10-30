@@ -28,9 +28,9 @@ const T = {
 
 /* ---------------- saved state ---------------- */
 const KEY = 'lili-v1';
-const DEF = { needs:{food:85,drink:85,sleep:85,clean:85,fun:85}, outfit:{hat:null,glasses:null,bow:'🎀',neck:null,cloth:null,shoes:null},
-  settings:{lang:'ar',pitch:1.6,mic:true,talk:true,vol:.9}, bandages:[], t:Date.now() };
-const RATE = { food:3, drink:4, sleep:2, clean:2.5, fun:4 };   // points lost per minute
+const DEF = { needs:{food:85,drink:85,sleep:85,clean:85,fun:85,potty:85}, outfit:{hat:null,glasses:null,bow:'🎀',neck:null,cloth:null,shoes:null},
+  settings:{lang:'ar',pitch:1.6,mic:true,talk:true,vol:.9}, bandages:[], potStars:0, t:Date.now() };
+const RATE = { food:3, drink:4, sleep:2, clean:2.5, fun:4, potty:3 };   // points lost per minute
 const copy = o => JSON.parse(JSON.stringify(o));
 let S;
 try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
@@ -220,7 +220,7 @@ const SAYS = {
   spicy:()=>ahah(), ahh:()=>meow(1.05,.8,{shape:'ahh'}), goodnight:()=>sigh(), morning:()=>{ stretchWake(); },
   clean:()=>{ chirp(2,1.35); setTimeout(()=>giggle(),450); }, teeth:()=>chirp(2,1.45), yuck:()=>bleh(),
   better:()=>{ chirp(3,1.3); }, love:()=>meow(1.15,.6,{shape:'mrrp'}), tickle:()=>laugh(), hot:()=>meow(.9,.7,{shape:'sad',gain:.25}),
-  pretty:()=>{ chirp(2,1.4); }, thanks:()=>meow(1.2,.4,{shape:'mrrp'}), yay:()=>chirp(3,1.5), dance:()=>chirp(2,1.3), catch:()=>hup()
+  pretty:()=>{ chirp(2,1.4); }, potty:()=>{ meow(1.1,.45,{shape:'q'}); A.wobUntil = now() + 1500; hop(10); }, thanks:()=>meow(1.2,.4,{shape:'mrrp'}), yay:()=>chirp(3,1.5), dance:()=>chirp(2,1.3), catch:()=>hup()
 };
 function say(key) { lastSay = now(); (SAYS[key] || meow)(); }
 
@@ -285,7 +285,7 @@ const A = {
   mouth:0, hold:0, wide:false, pulses:[], blink:1, blinkS:0, nextBlink:now() + 2000, eyeOv:null, eyeOvUntil:0,
   tilt:0, tiltT:0, shakeUntil:0, by:0, bv:0, wobUntil:0, waveUntil:0, danceUntil:0,
   armL:0, armR:0, armLT:0, armRT:0, armLUntil:0, armRUntil:0, earL:0, earR:0, earKick:0,
-  tailKickUntil:0, look:null, lookUntil:0, wander:{x:0,y:0}, nextWander:0,
+  tailKickUntil:0, seat:0, seatT:0, look:null, lookUntil:0, wander:{x:0,y:0}, nextWander:0,
   listening:false, voiceTalking:false, tts:false, lock:false, sleeping:false, petting:false, sick:false,
   red:0, stacheUntil:0, dizzyUntil:0, nextIdle:now() + 6000
 };
@@ -310,7 +310,8 @@ function frame() {
   if (t < A.dizzyUntil) rot = Math.sin(t / 160) * 8;
   if (t < A.danceUntil) rot = Math.sin(t / 180) * 5;
   const br = A.sleeping ? 1 + Math.sin(t / 700) * .022 : 1 + Math.sin(t / 450) * .012;
-  R.body.setAttribute('transform', `translate(0 ${-A.by}) translate(200 528) rotate(${rot}) scale(${2 - br} ${br}) translate(-200 -528)`);
+  A.seat += (A.seatT - A.seat) * Math.min(1, dt * 7);
+  R.body.setAttribute('transform', `translate(0 ${-A.by - A.seat}) translate(200 528) rotate(${rot}) scale(${2 - br} ${br}) translate(-200 -528)`);
 
   /* head */
   let tt = A.tiltT;
@@ -430,9 +431,9 @@ function dizzyStars(t) {
 }
 
 /* ---------------- HUD: needs, thought bubble, ear ---------------- */
-const NEED_MODE = { food:'food', drink:'drink', sleep:'sleep', clean:'bath', fun:'play' };
-const NEED_ICON = { food:'🍗', drink:'🥛', sleep:'🌙', clean:'🛁', fun:'⚽' };
-const NEED_SAY = { food:'hungry', drink:'thirsty', sleep:'sleepy', clean:'dirty', fun:'bored' };
+const NEED_MODE = { food:'food', drink:'drink', sleep:'sleep', clean:'bath', fun:'play', potty:'potty' };
+const NEED_ICON = { food:'🍗', drink:'🥛', sleep:'🌙', clean:'🛁', fun:'⚽', potty:'🚽' };
+const NEED_SAY = { food:'hungry', drink:'thirsty', sleep:'sleepy', clean:'dirty', fun:'bored', potty:'potty' };
 function renderNeeds() {
   $$('.need').forEach(el => {
     const v = S.needs[el.dataset.need];
@@ -582,6 +583,7 @@ function idle() {
   A.nextIdle = now() + rnd(6000, 11000);
   const opts = ['wave','meow','tail','look','stretch','hum','scratch'];
   if (S.needs.sleep < 45) opts.push('yawn', 'yawn');
+  if (S.needs.potty < 30) opts.push('pottyDance', 'pottyDance', 'pottyDance');
   switch (pick(opts)) {
     case 'wave': A.waveUntil = now() + 1300; meow(1.15, .35, { shape:'mrrp' }); break;
     case 'meow': meow(rnd(.95, 1.15), rnd(.45, .7)); break;
@@ -590,6 +592,7 @@ function idle() {
     case 'stretch': arm('L', 150, 1100); arm('R', -150, 1100); yawn(); eyes('closed', 1100); hop(8); break;
     case 'hum': eyes('happy', 1000); meow(1.3, .25, { shape:'hee', gain:.2 }); meow(1.4, .25, { shape:'hee', gain:.2, t:.3 }); A.tiltT = -8; setTimeout(() => A.tiltT = 0, 900); break;
     case 'scratch': A.earKick = 16; arm('L', 160, 900); setTimeout(() => A.earKick = 16, 400); break;
+    case 'pottyDance': A.wobUntil = now() + 1600; hop(12); setTimeout(() => hop(12), 450); meow(1.15, .4, { shape:'q' }); eyes('closed', 600); break;
     case 'yawn': yawn(); eyes('closed', 1200); arm('L', 140, 900); break;
   }
 }
@@ -670,7 +673,7 @@ function openMode(m) {
   mode = m; document.body.dataset.mode = m;
   dock.classList.add('hidden'); tray.classList.remove('hidden');
   click(); updateThought();
-  ({ food:modeFood, drink:modeDrink, sleep:modeSleep, bath:modeBath, teeth:modeTeeth, play:modePlay, dress:modeDress, doctor:modeDoctor })[m]();
+  ({ food:modeFood, drink:modeDrink, potty:modePotty, sleep:modeSleep, bath:modeBath, teeth:modeTeeth, play:modePlay, dress:modeDress, doctor:modeDoctor })[m]();
 }
 function closeMode(switching) {
   const m = mode;
@@ -679,6 +682,7 @@ function closeMode(switching) {
   if (m === 'doctor') { clearInterval(TOOLS.coughT); if (A.sick) { A.sick = false; } }
   if (m === 'play') stopPlay();
   if (m === 'bath') { R.foam.innerHTML = ''; R.wet.innerHTML = ''; }
+  if (m === 'potty') { toiletEl.classList.remove('on', 'flush'); A.seatT = 0; R.foam.innerHTML = ''; R.wet.innerHTML = ''; }
   mode = 'idle'; document.body.dataset.mode = 'idle';
   tray.classList.add('hidden'); dock.classList.remove('hidden');
   if (!switching) { click(); A.nextIdle = now() + 4000; }
@@ -714,7 +718,7 @@ async function eat(f) {
     await wait(260);
   }
   R.item.textContent = ''; R.item.removeAttribute('transform');
-  addNeed('food', f.fav ? 30 : 20); addNeed('fun', 3);
+  addNeed('food', f.fav ? 30 : 20); addNeed('fun', 3); addNeed('potty', -6);
   if (f.spicy) {
     A.red = 1; spicySfx(); eyes('closed', 1800); hop(45);
     const e1 = toC(110, 70), e2 = toC(290, 70);
@@ -752,12 +756,109 @@ async function sip(d) {
   for (let i = 0; i < 3; i++) { (i % 2 ? gulp : slurp)(); await wait(430); R.item.setAttribute('opacity', (1 - (i + 1) / 3.5).toFixed(2)); }
   R.item.textContent = ''; R.item.removeAttribute('transform'); R.item.removeAttribute('opacity'); A.hold = 0;
   const wasSpicy = A.red > .05; A.red = 0;
-  addNeed('drink', 25);
+  addNeed('drink', 25); addNeed('potty', -12);
   meow(1.05, .7, { shape:'ahh' }); hop(14);
   if (d.milk) A.stacheUntil = now() + 9000;
   await wait(800);
   say(wasSpicy ? 'thanks' : Math.random() < .5 ? 'ahh' : 'thanks');
   await wait(900); lockOff();
+}
+
+/* ---------- POTTY: teaches the routine, one step at a time ---------- */
+const toiletEl = $('#toilet');
+const POTTY = [{ id:'sit', e:'🚽' }, { id:'paper', e:'🧻' }, { id:'flush', e:'🔘' }, { id:'soap', e:'🧼' }, { id:'rinse', e:'🚰' }, { id:'dry', html:'<div class="towel"></div>' }];
+function renderBadge() { const b = $('#potBadge'); if (b) b.textContent = S.potStars ? '⭐' + S.potStars : ''; }
+function modePotty() {
+  TOOLS.pot = { step:0, lastFx:0, lastSnd:0, foamed:false };
+  toiletEl.classList.add('on'); whoosh();
+  setTray(POTTY.map((st, i) => ({ html:(st.html || st.e) + `<i class="num">${i + 1}</i>`, id:'pot:' + st.id, down:ev => potTap(ev, i) })));
+  potHint();
+  if (S.needs.potty < 50) setTimeout(() => { A.wobUntil = now() + 1400; meow(1.1, .45, { shape:'q' }); hop(10); }, 400);
+}
+function potHint() {
+  const P = TOOLS.pot;
+  $$('.item', items).forEach((b, i) => { b.classList.toggle('hint', i === P.step); b.classList.toggle('done', i < P.step); b.classList.toggle('later', i > P.step); });
+}
+function potWrong() {
+  nuhuh(); A.shakeUntil = now() + 600;
+  const b = $$('.item', items)[TOOLS.pot.step]; if (b) { b.classList.remove('hint'); void b.offsetWidth; b.classList.add('hint'); }
+}
+function potTap(ev, i) {
+  ev.preventDefault(); const P = TOOLS.pot;
+  if (A.lock || P.step >= POTTY.length) return;
+  if (i !== P.step) { if (i > P.step) potWrong(); return; }
+  const id = POTTY[i].id;
+  if (id === 'sit') return potSit();
+  if (id === 'flush') return potFlush();
+  if (id === 'paper') return startDrag(ev, '🧻', { size:90, drop:(x, y, g, tap) => { if (!(tap || overCat(x, y) || toiletHit(x, y))) { vanish(g); return; } potPaper(g); } });
+  if (id === 'soap') return startDrag(ev, '🧼', { size:84, move:potSoap, drop:(x, y, g) => vanish(g) });
+  if (id === 'rinse') return startDrag(ev, '🚰', { size:96, lift:90, move:potRinse, drop:(x, y, g) => vanish(g) });
+  if (id === 'dry') return startDrag(ev, '<div class="towel"></div>', { move:potDry, drop:(x, y, g) => vanish(g) });
+}
+function toiletHit(x, y) { const r = toiletEl.getBoundingClientRect(); return x > r.left && x < r.right && y > r.top + r.height * .5; }
+function potNext() { TOOLS.pot.step++; potHint(); if (TOOLS.pot.step >= POTTY.length) potDone(); }
+async function potSit() {
+  lockOn(); hop(45); await wait(220); A.seatT = 46; await wait(550);
+  eyes('closed', 2300); A.tiltT = -5;
+  play('pour', { rate:1.75, gain:.28, dur:1.7, mouth:0 });
+  const c = toC(200, 505);
+  for (let i = 0; i < 6; i++) fx('✨', c.x + rnd(-50, 50) * sc(), c.y, { delay:i * .25, size:22, dy:30 });
+  await wait(2000); A.tiltT = 0; eyes('happy', 1000); chirp(2, 1.3); S.needs.potty = 100; renderNeeds();
+  await wait(500); lockOff(); potNext();
+}
+async function potPaper(g) {
+  lockOn(); const c = toC(160, 470); await fly(g, c.x, c.y, 350, .5);
+  noise({ dur:.3, f:3200, q:.6, peak:.16 }); noise({ dur:.25, f:2600, q:.6, peak:.14, t:.35 });
+  arm('L', 40, 900); g.style.transition = 'opacity .5s'; g.style.opacity = 0; setTimeout(() => g.remove(), 520);
+  await wait(800); eyes('happy', 700); lockOff(); potNext();
+}
+async function potFlush() {
+  lockOn(); A.seatT = 0; hop(30); await wait(500);
+  toiletEl.classList.add('flush'); click();
+  play('pour', { rate:.75, gain:.85, dur:1.9, mouth:0 }); noise({ dur:1.6, f:300, f1:1200, q:1.2, peak:.22, a:.1, t:.2 });
+  const c = toC(200, 470);
+  for (let i = 0; i < 8; i++) fx(i % 2 ? '🌀' : '💧', c.x + rnd(-60, 60) * sc(), c.y + rnd(-6, 6), { delay:i * .12, size:rnd(26, 40), dy:-rnd(10, 40), dx:rnd(-30, 30), dur:1 });
+  A.waveUntil = now() + 1600; A.look = { x:c.x, y:c.y }; A.lookUntil = now() + 1500;
+  await wait(400); toiletEl.classList.remove('flush'); await wait(1300);
+  chirp(2, 1.4); lockOff(); potNext();
+}
+function potSoap(x, y) {
+  const P = TOOLS.pot, t = now(); if (P.step !== 3 || partAt(x, y) !== 'hand') return;
+  if (t - P.lastFx > 70) {
+    P.lastFx = t; const p = toS(x, y);
+    for (let i = 0; i < 3; i++) addSvgCircle(R.foam, p.x + rnd(-16, 16), p.y + rnd(-14, 14), rnd(7, 15), 'rgba(255,255,255,.95)', 'rgba(150,210,255,.8)');
+    if (Math.random() < .35) fx('🫧', x + rnd(-30, 30), y, { size:rnd(20, 32), dy:rnd(50, 100) });
+  }
+  if (t - P.lastSnd > 160) { P.lastSnd = t; scrub(); }
+  if (R.foam.childElementCount >= 30) { P.foamed = true; eyes('happy', 700); potNext(); }
+}
+function potRinse(x, y) {
+  const P = TOOLS.pot, t = now(); if (P.step !== 4) return;
+  if (t - P.lastFx > 70) { P.lastFx = t; for (let i = 0; i < 2; i++) fx('💧', x + rnd(-30, 30), y + 40, { size:rnd(16, 26), dy:-rnd(140, 240), dx:rnd(-20, 20), dur:.8 }); }
+  if (t - P.lastSnd > 300) { P.lastSnd = t; splash(); }
+  const p = toS(x, y + 60);
+  [...R.foam.children].forEach(c => { if (Math.hypot(c.cx.baseVal.value - p.x, c.cy.baseVal.value - p.y) < 75) c.remove(); });
+  if (R.foam.childElementCount === 0) {
+    [[153, 452], [247, 452], [140, 440], [262, 440]].forEach(([a, b]) => addWetDrop(a + rnd(-8, 8), b + rnd(-6, 6)));
+    potNext();
+  }
+}
+function potDry(x, y) {
+  const P = TOOLS.pot, t = now(); if (P.step !== 5 || !overCat(x, y)) return;
+  if (t - P.lastSnd > 180) { P.lastSnd = t; scrub(); }
+  const p = toS(x, y);
+  [...R.wet.children].forEach(c => { if (Math.hypot(+c.getAttribute('x') - p.x, +c.getAttribute('y') - p.y) < 80) c.remove(); });
+  if (R.wet.childElementCount === 0) potNext();
+}
+async function potDone() {
+  lockOn(); S.potStars = (S.potStars || 0) + 1; renderBadge(); save(); addNeed('fun', 8); addNeed('clean', 5);
+  const c = toC(200, 230);
+  fx('⭐', c.x, c.y, { size:150, dy:140, dur:2.2, s1:1.4 }); sparkles(c.x, c.y, 12, 170 * sc());
+  chime(); hearts(5); hop(34); eyes('happy', 2000); A.danceUntil = now() + 1800;
+  await wait(500); laugh(); await wait(1800);
+  toiletEl.classList.remove('on'); lockOff();
+  await wait(1200);
+  if (mode === 'potty') { TOOLS.pot.step = 0; toiletEl.classList.add('on'); potHint(); }
 }
 
 /* ---------- SLEEP ---------- */
@@ -1117,7 +1218,7 @@ document.addEventListener('touchend', () => { if (AC && AC.state !== 'running') 
 document.addEventListener('gesturestart', e => e.preventDefault());
 document.addEventListener('contextmenu', e => e.preventDefault());
 
-function renderAll() { renderNeeds(); renderOutfit(); renderBandages(); }
+function renderAll() { renderNeeds(); renderOutfit(); renderBandages(); renderBadge(); }
 renderAll();
 requestAnimationFrame(frame);
 if ('serviceWorker' in navigator) {
